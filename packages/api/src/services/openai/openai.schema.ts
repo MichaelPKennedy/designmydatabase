@@ -1,3 +1,4 @@
+// // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from '@feathersjs/schema'
 import { Type, getValidator, querySyntax } from '@feathersjs/typebox'
 import type { Static } from '@feathersjs/typebox'
@@ -8,13 +9,8 @@ import { dataValidator, queryValidator } from '../../validators'
 // Main data model schema
 export const openaiSchema = Type.Object(
   {
-    post_id: Type.Number(),
-    title: Type.String(),
-    category: Type.String(),
-    content: Type.String(),
-    author: Type.String(),
-    created_at: Type.String(),
-    updated_at: Type.String()
+    id: Type.Number(),
+    text: Type.String()
   },
   { $id: 'Openai', additionalProperties: false }
 )
@@ -25,21 +21,15 @@ export const openaiResolver = resolve<Openai, HookContext>({})
 export const openaiExternalResolver = resolve<Openai, HookContext>({})
 
 // Schema for creating new entries
-export const openaiDataSchema = Type.Object(
-  {
-    title: Type.String(),
-    category: Type.String(),
-    content: Type.String(),
-    author: Type.String()
-  },
-  { $id: 'OpenaiData', additionalProperties: false }
-)
+export const openaiDataSchema = Type.Pick(openaiSchema, ['text'], {
+  $id: 'OpenaiData'
+})
 export type OpenaiData = Static<typeof openaiDataSchema>
 export const openaiDataValidator = getValidator(openaiDataSchema, dataValidator)
 export const openaiDataResolver = resolve<Openai, HookContext>({})
 
 // Schema for updating existing entries
-export const openaiPatchSchema = Type.Partial(openaiDataSchema, {
+export const openaiPatchSchema = Type.Partial(openaiSchema, {
   $id: 'OpenaiPatch'
 })
 export type OpenaiPatch = Static<typeof openaiPatchSchema>
@@ -47,7 +37,7 @@ export const openaiPatchValidator = getValidator(openaiPatchSchema, dataValidato
 export const openaiPatchResolver = resolve<Openai, HookContext>({})
 
 // Schema for allowed query properties
-export const openaiQueryProperties = Type.Pick(openaiSchema, ['post_id', 'title', 'category', 'author'])
+export const openaiQueryProperties = Type.Pick(openaiSchema, ['id', 'text'])
 export const openaiQuerySchema = Type.Intersect(
   [
     querySyntax(openaiQueryProperties),

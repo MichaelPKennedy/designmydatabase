@@ -40,13 +40,13 @@ export class OpenaiService implements ServiceMethods<any> {
         max_tokens: 200
       })
 
-      const description = response.choices[0].message.content
+      const description = response.choices[0].message.content || ''
 
       //TODO: store response in MongoDB.
       return { sqlCode: description, mermaidCode: 'Generated Mermaid Code' }
     } catch (aiError) {
       console.error('Error generating description:', aiError)
-      return null
+      return { sqlCode: 'Error generating SQL code', mermaidCode: 'Error generating Mermaid code' }
     }
   }
 

@@ -56,6 +56,8 @@
     "@feathersjs/socketio": "^5.0.29",
     "@feathersjs/transport-commons": "^5.0.29",
     "@feathersjs/typebox": "^5.0.29",
+    "dotenv": "^16.4.5",
+    "feathers-hooks-common": "^8.2.0",
     "mongodb": "^6.8.0",
     "openai": "^4.52.7",
     "winston": "^3.13.1"

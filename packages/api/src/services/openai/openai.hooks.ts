@@ -1,9 +1,9 @@
-const { disallow } = require('feathers-hooks-common')
+import { disallow } from 'feathers-hooks-common'
 import { authenticate } from '@feathersjs/authentication/lib/hooks'
 
 export const openaiHooks = {
   before: {
-    all: [authenticate('jwt', 'apiKey')],
+    all: [],
     find: [],
     get: [],
     create: [],

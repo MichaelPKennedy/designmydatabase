@@ -24,12 +24,11 @@ export const openaiExternalResolver = resolve<Openai, HookContext>({})
 // Schema for creating new entries
 export const openaiDataSchema = Type.Object(
   {
-    entities: Type.Array(
-      Type.Object({
-        name: Type.String(),
-        attributes: Type.Array(Type.String())
-      })
-    )
+    name: Type.String(),
+    people: Type.Array(Type.String()),
+    resources: Type.Array(Type.String()),
+    activities: Type.Array(Type.String()),
+    summary: Type.String()
   },
   { $id: 'OpenaiData', additionalProperties: false }
 )

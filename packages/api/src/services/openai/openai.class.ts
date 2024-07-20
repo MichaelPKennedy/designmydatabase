@@ -4,6 +4,9 @@ import type { Openai, OpenaiData, OpenaiPatch, OpenaiQuery } from './openai.sche
 
 export type { Openai, OpenaiData, OpenaiPatch, OpenaiQuery }
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 import OpenAI from 'openai'
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -31,19 +34,43 @@ export class OpenaiService implements ServiceMethods<any> {
   }
 
   async create(data: OpenaiData, params?: OpenaiParams): Promise<Openai> {
-    const { entities } = data
-    const prompt = `Generate SQL code to create tables and relationships for the following entities and attributes:\n\n${JSON.stringify(entities, null, 2)}`
+    const { name, people, resources, activities, summary } = data
+    const prompt = `Generate SQL code to create tables and relationships for the following business details:
+      Business Name: ${name}
+      Main People: ${people.join(', ')}
+      Resources, Products, or Services: ${resources.join(', ')}
+      Business Activities: ${activities.join(', ')}
+      Business Summary: ${summary}
+
+      Please provide the response in the following format:
+      SQL Code:
+      \`\`\`sql
+      <your SQL code here>
+      \`\`\`
+
+      Mermaid Diagram:
+      \`\`\`mermaid
+      <your Mermaid diagram here>
+      \`\`\`
+`
+
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200
+        max_tokens: 2000
       })
 
-      const description = response.choices[0].message.content || ''
+      const description = response.choices[0]?.message?.content || ''
 
-      //TODO: store response in MongoDB.
-      return { sqlCode: description, mermaidCode: 'Generated Mermaid Code' }
+      const sqlCodeMatch = description.match(/```sql\s*([\s\S]*?)\s*```/)
+      const mermaidCodeMatch = description.match(/```mermaid\s*([\s\S]*?)\s*```/)
+
+      const sqlCode = sqlCodeMatch ? sqlCodeMatch[1].trim() : 'Error generating SQL code'
+      const mermaidCode = mermaidCodeMatch ? mermaidCodeMatch[1].trim() : 'Error generating Mermaid code'
+
+      // TODO: Store response in MongoDB
+      return { sqlCode, mermaidCode }
     } catch (aiError) {
       console.error('Error generating description:', aiError)
       return { sqlCode: 'Error generating SQL code', mermaidCode: 'Error generating Mermaid code' }

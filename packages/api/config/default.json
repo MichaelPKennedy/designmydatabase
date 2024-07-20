@@ -5,6 +5,26 @@
   "origins": [
     "http://localhost:3030"
   ],
+  "authentication": {
+    "secret": "cwoeuD2nii/OvjUqa3WURYcB5unroZpZ",
+    "authStrategies": [
+      "jwt",
+      "apiKey"
+    ],
+    "apiKey": {
+      "allowedKeys": [ "d1e79e66-b72c-4215-b6ec-079b262b0b2c", "ef720599-7a4a-4467-88a8-111adc6cde91" ],
+      "header": "x-access-token"
+    },
+    "jwtOptions": {
+      "header": {
+        "typ": "access"
+      },
+      "audience": "http://localhost:5173/",
+      "issuer": "feathers",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    }
+  },
   "paginate": {
     "default": 10,
     "max": 50

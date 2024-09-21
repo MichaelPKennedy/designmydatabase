@@ -52,28 +52,38 @@ export class OpenaiService implements ServiceMethods<any> {
       \`\`\`mermaid
       <your Mermaid diagram here>
       \`\`\`
-`
+    `
 
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 2000
+        max_tokens: 2000,
+        temperature: 0.7, // Add temperature for more creative responses
+        n: 1 // Ensure we get only one completion
       })
 
-      const description = response.choices[0]?.message?.content || ''
+      const content = response.choices[0]?.message?.content
+      if (!content) {
+        throw new Error('No content received from OpenAI')
+      }
 
-      const sqlCodeMatch = description.match(/```sql\s*([\s\S]*?)\s*```/)
-      const mermaidCodeMatch = description.match(/```mermaid\s*([\s\S]*?)\s*```/)
+      const sqlCodeMatch = content.match(/```sql\s*([\s\S]*?)\s*```/)
+      const mermaidCodeMatch = content.match(/```mermaid\s*([\s\S]*?)\s*```/)
 
-      const sqlCode = sqlCodeMatch ? sqlCodeMatch[1].trim() : 'Error generating SQL code'
-      const mermaidCode = mermaidCodeMatch ? mermaidCodeMatch[1].trim() : 'Error generating Mermaid code'
+      if (!sqlCodeMatch || !mermaidCodeMatch) {
+        throw new Error('Failed to extract SQL or Mermaid code from the response')
+      }
+
+      const sqlCode = sqlCodeMatch[1].trim()
+      const mermaidCode = mermaidCodeMatch[1].trim()
 
       // TODO: Store response in MongoDB
+      // For now, we'll just return the generated codes
       return { sqlCode, mermaidCode }
-    } catch (aiError) {
-      console.error('Error generating description:', aiError)
-      return { sqlCode: 'Error generating SQL code', mermaidCode: 'Error generating Mermaid code' }
+    } catch (error) {
+      console.error('Error in OpenAI service:', error)
+      throw new Error('Failed to generate SQL and Mermaid code')
     }
   }
 

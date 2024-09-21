@@ -75,7 +75,7 @@ export class OpenaiService implements ServiceMethods<any> {
         throw new Error('Failed to extract SQL or Mermaid code from the response')
       }
 
-      const sqlCoding = sqlCodeMatch[1].trim()
+      const sqlCode = sqlCodeMatch[1].trim()
       const mermaidCode = mermaidCodeMatch[1].trim()
 
       // TODO: Store response in MongoDB

@@ -1,170 +1,207 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState } from "react";
+import ERDiagram from "./ERDiagram";
 import feathersClient from "../../../feathersClient";
 
-import ERDiagram from "./ERDiagram";
-
-interface BusinessDetails {
-  name: string;
+interface Suggestion {
   people: string[];
   resources: string[];
   activities: string[];
-  summary: string;
+}
+
+interface Suggestions {
+  people: string[];
+  resources: string[];
+  activities: string[];
 }
 
 const DatabaseForm: React.FC = () => {
-  const [step, setStep] = useState(0);
-  const [businessDetails, setBusinessDetails] = useState<BusinessDetails>({
-    name: "",
-    people: [""],
-    resources: [""],
-    activities: [""],
-    summary: "",
-  });
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestions | null>(null);
+  const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
+  const [selectedResources, setSelectedResources] = useState<string[]>([]);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
+  const [customPeople, setCustomPeople] = useState<string[]>([]);
+  const [customResources, setCustomResources] = useState<string[]>([]);
+  const [customActivities, setCustomActivities] = useState<string[]>([]);
   const [result, setResult] = useState<{
     sqlCode: string;
     mermaidCode: string;
   } | null>(null);
+  const [step, setStep] = useState(1);
 
-  const handleChange = (
-    field: keyof BusinessDetails,
-    index: number | null,
-    value: string
-  ) => {
-    if (index === null) {
-      setBusinessDetails({ ...businessDetails, [field]: value });
-    } else {
-      const updatedField = [...(businessDetails[field] as string[])];
-      updatedField[index] = value;
-      setBusinessDetails({ ...businessDetails, [field]: updatedField });
+  const handleBusinessNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep(2);
+  };
+
+  const handleBusinessTypeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await feathersClient
+        .service("openai")
+        .find({ query: { businessType } });
+      setSuggestions(response); // Assuming the response is already in the correct format
+      setStep(3);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
     }
   };
 
-  const addField = (field: keyof BusinessDetails) => {
-    setBusinessDetails({
-      ...businessDetails,
-      [field]: [...(businessDetails[field] as string[]), ""],
-    });
+  const handleSuggestionSelect = (category: keyof Suggestion, item: string) => {
+    switch (category) {
+      case "people":
+        setSelectedPeople((prev) => [...prev, item]);
+        break;
+      case "resources":
+        setSelectedResources((prev) => [...prev, item]);
+        break;
+      case "activities":
+        setSelectedActivities((prev) => [...prev, item]);
+        break;
+    }
   };
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    const response = await feathersClient
-      .service("openai")
-      .create(businessDetails);
-    console.log("response", response);
-    setResult(response);
+  const handleCustomAdd = (category: keyof Suggestion, item: string) => {
+    switch (category) {
+      case "people":
+        setCustomPeople((prev) => [...prev, item]);
+        break;
+      case "resources":
+        setCustomResources((prev) => [...prev, item]);
+        break;
+      case "activities":
+        setCustomActivities((prev) => [...prev, item]);
+        break;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await feathersClient.service("openai").create({
+        name: businessName,
+        type: businessType,
+        people: [...selectedPeople, ...customPeople],
+        resources: [...selectedResources, ...customResources],
+        activities: [...selectedActivities, ...customActivities],
+      });
+      setResult(response);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const renderStep = () => {
     switch (step) {
-      case 0:
-        return (
-          <div>
-            <h2>Step 1: Business Information</h2>
-            <input
-              type="text"
-              value={businessDetails.name}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setBusinessDetails({ ...businessDetails, name: e.target.value })
-              }
-              placeholder="What is the name of your business?"
-            />
-            <button type="button" onClick={() => setStep(1)}>
-              Next
-            </button>
-          </div>
-        );
       case 1:
         return (
-          <div>
-            <h2>Step 2: People</h2>
-            {businessDetails.people.map((person, index) => (
-              <input
-                key={index}
-                type="text"
-                value={person}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleChange("people", index, e.target.value)
-                }
-                placeholder="Who are the main types of people involved in your business? (e.g., Customers, Employees)"
-              />
-            ))}
-            <button type="button" onClick={() => addField("people")}>
-              Add Another Person
-            </button>
-            <button type="button" onClick={() => setStep(2)}>
-              Next
-            </button>
-          </div>
+          <form onSubmit={handleBusinessNameSubmit}>
+            <input
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="Enter your business name"
+              required
+            />
+            <button type="submit">Next</button>
+          </form>
         );
       case 2:
         return (
-          <div>
-            <h2>Step 3: Resources, Products, or Services</h2>
-            {businessDetails.resources.map((resource, index) => (
-              <input
-                key={index}
-                type="text"
-                value={resource}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleChange("resources", index, e.target.value)
-                }
-                placeholder="What are the resources, products, or services you provide?"
-              />
-            ))}
-            <button type="button" onClick={() => addField("resources")}>
-              Add Another Resource
-            </button>
-            <button type="button" onClick={() => setStep(3)}>
-              Next
-            </button>
-          </div>
+          <form onSubmit={handleBusinessTypeSubmit}>
+            <input
+              type="text"
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value)}
+              placeholder="Enter your business type"
+              required
+            />
+            <button type="submit">Get Suggestions</button>
+          </form>
         );
       case 3:
         return (
-          <div>
-            <h2>Step 5: Business Activities</h2>
-            {businessDetails.activities.map((activity, index) => (
-              <input
-                key={index}
-                type="text"
-                value={activity}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleChange("activities", index, e.target.value)
-                }
-                placeholder="What are the main activities in your business? (e.g., Selling Products, Providing Services)"
-              />
-            ))}
-            <button type="button" onClick={() => addField("activities")}>
-              Add Another Activity
-            </button>
-            <button type="button" onClick={() => setStep(5)}>
-              Next
-            </button>
-          </div>
-        );
-      case 4:
-        return (
-          <div>
-            <h2>Step 7: Business Summary</h2>
-            <textarea
-              value={businessDetails.summary}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                handleChange("summary", null, e.target.value)
-              }
-              placeholder="Summarize your business as best as possible. Include any additional details that might help in designing the database."
-            />
-            <button type="button" onClick={() => setStep(7)}>
-              Next
-            </button>
-          </div>
-        );
-      case 5:
-        return (
-          <div>
-            <h2>Review and Submit</h2>
+          <form onSubmit={handleSubmit}>
+            {suggestions && (
+              <>
+                <div>
+                  <h3>People</h3>
+                  {suggestions.people.map((person) => (
+                    <button
+                      key={person}
+                      type="button"
+                      onClick={() => handleSuggestionSelect("people", person)}
+                    >
+                      {person}
+                    </button>
+                  ))}
+                  <input
+                    type="text"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleCustomAdd("people", e.currentTarget.value);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                    placeholder="Add custom person"
+                  />
+                </div>
+                <div>
+                  <h3>Resources</h3>
+                  {suggestions.resources.map((resource) => (
+                    <button
+                      key={resource}
+                      type="button"
+                      onClick={() =>
+                        handleSuggestionSelect("resources", resource)
+                      }
+                    >
+                      {resource}
+                    </button>
+                  ))}
+                  <input
+                    type="text"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleCustomAdd("resources", e.currentTarget.value);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                    placeholder="Add custom resource"
+                  />
+                </div>
+                <div>
+                  <h3>Activities</h3>
+                  {suggestions.activities.map((activity) => (
+                    <button
+                      key={activity}
+                      type="button"
+                      onClick={() =>
+                        handleSuggestionSelect("activities", activity)
+                      }
+                    >
+                      {activity}
+                    </button>
+                  ))}
+                  <input
+                    type="text"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleCustomAdd("activities", e.currentTarget.value);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                    placeholder="Add custom activity"
+                  />
+                </div>
+              </>
+            )}
             <button type="submit">Generate ERD</button>
-          </div>
+          </form>
         );
       default:
         return null;
@@ -173,7 +210,31 @@ const DatabaseForm: React.FC = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>{renderStep()}</form>
+      {renderStep()}
+      {step === 3 && suggestions && (
+        <div>
+          <h3>Suggested People:</h3>
+          <ul>
+            {suggestions.people.map((person, index) => (
+              <li key={index}>{person}</li>
+            ))}
+          </ul>
+
+          <h3>Suggested Resources:</h3>
+          <ul>
+            {suggestions.resources.map((resource, index) => (
+              <li key={index}>{resource}</li>
+            ))}
+          </ul>
+
+          <h3>Suggested Activities:</h3>
+          <ul>
+            {suggestions.activities.map((activity, index) => (
+              <li key={index}>{activity}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {result && <ERDiagram result={result} />}
     </div>
   );

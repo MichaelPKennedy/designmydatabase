@@ -25,8 +25,38 @@ export class OpenaiService implements ServiceMethods<any> {
     this.sequelize = sequelizeClient
   }
 
-  async find(params: OpenaiParams): Promise<Openai[] | Paginated<Openai>> {
-    throw new Error('Method not implemented.')
+  async find(params: OpenaiParams) {
+    const { businessType } = (params.query as { businessType?: string }) || {}
+
+    if (!businessType) {
+      throw new Error('Business type is required for suggestions')
+    }
+
+    const prompt = `Given a ${businessType} business, suggest:
+    1. 5 key roles or types of people involved
+    2. 5 important resources or products
+    3. 5 main business activities or processes
+
+    Format the response as a JSON object with keys: people, resources, activities.`
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+
+      const content = response.choices[0]?.message?.content
+      if (!content) {
+        throw new Error('No content received from OpenAI')
+      }
+
+      return JSON.parse(content)
+    } catch (error) {
+      console.error('Error in OpenAI service (find method):', error)
+      throw new Error('Failed to generate suggestions')
+    }
   }
 
   async get(id: Id, params?: OpenaiParams): Promise<Openai> {
@@ -50,8 +80,16 @@ export class OpenaiService implements ServiceMethods<any> {
 
       Mermaid Diagram:
       \`\`\`mermaid
-      <your Mermaid diagram here>
+      erDiagram
+          <your Mermaid diagram here>
       \`\`\`
+
+      Ensure the Mermaid diagram:
+      1. Uses proper entity names (PascalCase)
+      2. Includes all relevant entities
+      3. Shows correct relationships (1-1, 1-n, n-n) with proper syntax
+      4. Lists key attributes for each entity
+      5. Uses descriptive relationship labels
     `
 
     try {
@@ -59,8 +97,8 @@ export class OpenaiService implements ServiceMethods<any> {
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 2000,
-        temperature: 0.7, // Add temperature for more creative responses
-        n: 1 // Ensure we get only one completion
+        temperature: 0.7,
+        n: 1
       })
 
       const content = response.choices[0]?.message?.content

@@ -169,7 +169,9 @@ const DatabaseForm: React.FC = () => {
         return renderSuggestions("activities");
       case 6:
         return result ? (
-          <ERDiagram result={result} />
+          <div>
+            <ERDiagram result={result} />
+          </div>
         ) : (
           <p>Generating ERD...</p>
         );

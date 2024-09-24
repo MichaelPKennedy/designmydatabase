@@ -23,6 +23,7 @@ const DatabaseForm: React.FC = () => {
     mermaidCode: string;
   } | null>(null);
   const [step, setStep] = useState(1);
+  const [feedback, setFeedback] = useState("");
 
   const handleBusinessNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +63,8 @@ const DatabaseForm: React.FC = () => {
         [category]: [...prev[category], customItem.trim()],
       }));
       setCustomItem("");
+      setFeedback(`Added "${customItem.trim()}" to ${category}`);
+      setTimeout(() => setFeedback(""), 3000); // Clear feedback after 3 seconds
     }
   };
 
@@ -89,11 +92,18 @@ const DatabaseForm: React.FC = () => {
 
   const renderSuggestions = (category: keyof Suggestion) => {
     if (!suggestions) return null;
+
+    // Create a Set of unique items
+    const uniqueItems = new Set([
+      ...suggestions[category],
+      ...selectedItems[category],
+    ]);
+
     return (
       <div style={styles.form}>
         <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {suggestions[category].map((item, index) => (
+          {Array.from(uniqueItems).map((item, index) => (
             <li
               key={index}
               onClick={() => handleItemClick(category, item)}
@@ -110,18 +120,21 @@ const DatabaseForm: React.FC = () => {
         </ul>
         <form
           onSubmit={(e) => handleCustomItemSubmit(e, category)}
-          style={{ display: "flex" }}
+          style={{ display: "flex", flexDirection: "column" }}
         >
-          <input
-            type="text"
-            value={customItem}
-            onChange={(e) => setCustomItem(e.target.value)}
-            placeholder={`Add custom ${category.slice(0, -1)}`}
-            style={styles.input}
-          />
-          <button type="submit" style={styles.button}>
-            Add Custom
-          </button>
+          <div style={{ display: "flex" }}>
+            <input
+              type="text"
+              value={customItem}
+              onChange={(e) => setCustomItem(e.target.value)}
+              placeholder={`Add custom ${category.slice(0, -1)}`}
+              style={styles.input}
+            />
+            <button type="submit" style={styles.button}>
+              Add Custom
+            </button>
+          </div>
+          {feedback && <p style={styles.feedback}>{feedback}</p>}
         </form>
       </div>
     );
@@ -211,6 +224,11 @@ const DatabaseForm: React.FC = () => {
       border: "none",
       borderRadius: "3px",
       cursor: "pointer",
+    },
+    feedback: {
+      color: "green",
+      marginTop: "5px",
+      fontSize: "14px",
     },
   };
 

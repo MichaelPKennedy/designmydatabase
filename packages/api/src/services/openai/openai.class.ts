@@ -25,6 +25,37 @@ export class OpenaiService implements ServiceMethods<any> {
     this.sequelize = sequelizeClient
   }
 
+  // Basic Mermaid syntax check
+  private validateMermaidSyntax(mermaidCode: string): boolean {
+    // Check if the diagram starts with 'erDiagram'
+    if (!mermaidCode.trim().startsWith('erDiagram')) {
+      return false
+    }
+
+    // Check for basic entity syntax
+    const entityRegex = /\w+\s*{[^}]*}/g
+    const entities = mermaidCode.match(entityRegex)
+    if (!entities || entities.length === 0) {
+      return false
+    }
+
+    // Check for relationship syntax
+    const relationshipRegex =
+      /\s*\w+\s+((\|\|)|(\}\|)|(\|\{)|(\}o)|(\|o)|(o\|)|(o\{))--((\|\|)|(\}\|)|(\|\{)|(\}o)|(\|o)|(o\|)|(o\{))\s+\w+\s*(:?\s*"[^"]*")?\s*/g
+    const relationships = mermaidCode.match(relationshipRegex)
+    if (!relationships || relationships.length === 0) {
+      return false
+    }
+
+    // Additional check for invalid relationship symbols
+    const invalidRelationshipRegex = /\w+\s+\|--\|?\s+\w+/
+    if (invalidRelationshipRegex.test(mermaidCode)) {
+      return false
+    }
+
+    return true
+  }
+
   async find(params: OpenaiParams) {
     const { businessType } = (params.query as { businessType?: string }) || {}
 
@@ -42,7 +73,7 @@ export class OpenaiService implements ServiceMethods<any> {
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user' as const, content: prompt }],
         max_tokens: 500,
         temperature: 0.7
       })
@@ -84,50 +115,76 @@ export class OpenaiService implements ServiceMethods<any> {
           <your Mermaid diagram here>
       \`\`\`
 
-      Ensure the Mermaid diagram:
+     Ensure the Mermaid diagram:
       1. Uses proper entity names (PascalCase)
       2. Includes all relevant entities
-      3. Shows correct relationships (1-1, 1-n, n-n) with proper syntax
+      3. Shows correct relationships using only these symbols: ||--||, }|--|{, }o--o{, ||--o{, ||--|{
       4. Lists key attributes for each entity
-      5. Uses descriptive relationship labels
+      5. Uses descriptive relationship labels in quotes
+      6. Ends each relationship definition with a newline character
     `
 
-    try {
-      const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 2000,
-        temperature: 0.7,
-        n: 1
-      })
+    const maxRetries = 5
+    let attempts = 0
 
-      const content = response.choices[0]?.message?.content
-      if (!content) {
-        throw new Error('No content received from OpenAI')
+    while (attempts < maxRetries) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'user' as const, content: prompt },
+            ...(attempts > 0
+              ? [
+                  {
+                    role: 'user' as const,
+                    content: 'The previous Mermaid diagram was invalid. Please try again.'
+                  }
+                ]
+              : [])
+          ],
+          max_tokens: 2000,
+          temperature: 0.7,
+          n: 1
+        })
+
+        const content = response.choices[0]?.message?.content
+        if (!content) {
+          throw new Error('No content received from OpenAI')
+        }
+
+        const sqlCodeMatch = content.match(/```sql\s*([\s\S]*?)\s*```/)
+        const mermaidCodeMatch = content.match(/```mermaid\s*([\s\S]*?)\s*```/)
+
+        if (!sqlCodeMatch || !mermaidCodeMatch) {
+          throw new Error('Failed to extract SQL or Mermaid code from the response')
+        }
+
+        const sqlCode = sqlCodeMatch[1].trim()
+        const mermaidCode = mermaidCodeMatch[1].trim()
+
+        if (this.validateMermaidSyntax(mermaidCode)) {
+          // TODO: Store response in MongoDB
+          return { sqlCode, mermaidCode }
+        } else {
+          throw new Error('Invalid Mermaid syntax')
+        }
+      } catch (error) {
+        console.error(`Attempt ${attempts + 1} failed:`, error)
+        attempts++
+
+        if (attempts >= maxRetries) {
+          throw new Error('Failed to generate valid SQL and Mermaid code after multiple attempts')
+        }
       }
-
-      const sqlCodeMatch = content.match(/```sql\s*([\s\S]*?)\s*```/)
-      const mermaidCodeMatch = content.match(/```mermaid\s*([\s\S]*?)\s*```/)
-
-      if (!sqlCodeMatch || !mermaidCodeMatch) {
-        throw new Error('Failed to extract SQL or Mermaid code from the response')
-      }
-
-      const sqlCode = sqlCodeMatch[1].trim()
-      const mermaidCode = mermaidCodeMatch[1].trim()
-
-      // TODO: Store response in MongoDB
-      // For now, we'll just return the generated codes
-      return { sqlCode, mermaidCode }
-    } catch (error) {
-      console.error('Error in OpenAI service:', error)
-      throw new Error('Failed to generate SQL and Mermaid code')
     }
+
+    throw new Error('Failed to generate valid SQL and Mermaid code')
   }
 
   async update(id: NullableId, data: OpenaiData, params?: OpenaiParams): Promise<Openai> {
     throw new Error('Method not implemented.')
   }
+
   async patch(id: NullableId, data: OpenaiPatch, params?: OpenaiParams): Promise<Openai> {
     throw new Error('Method not implemented.')
   }

@@ -1,10 +1,11 @@
-import React from "react";
-import Mermaid from "react-mermaid2";
+import React, { useEffect, useRef } from "react";
+import mermaid from "mermaid";
 import styled from "styled-components";
 import "./MermaidDiagram.css";
 
 interface MermaidDiagramProps {
   chartDefinition: string;
+  onSvgRendered: (svg: SVGSVGElement | null, error: Error | null) => void;
 }
 
 const DiagramContainer = styled.div`
@@ -15,23 +16,30 @@ const DiagramContainer = styled.div`
   border-radius: 8px;
 `;
 
-const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chartDefinition }) => {
-  return (
-    <DiagramContainer>
-      <Mermaid
-        chart={chartDefinition}
-        config={{
-          theme: "default",
-          startOnLoad: true,
-          securityLevel: "loose",
-          flowchart: {
-            useMaxWidth: false,
-            htmlLabels: true,
-          },
-        }}
-      />
-    </DiagramContainer>
-  );
+const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
+  chartDefinition,
+  onSvgRendered,
+}) => {
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (elementRef.current) {
+      mermaid
+        .render("mermaid-diagram", chartDefinition)
+        .then((result) => {
+          if (elementRef.current) {
+            elementRef.current.innerHTML = result.svg;
+            const svgElement = elementRef.current.querySelector("svg");
+            onSvgRendered(svgElement as SVGSVGElement, null);
+          }
+        })
+        .catch((error) => {
+          onSvgRendered(null, error);
+        });
+    }
+  }, [chartDefinition, onSvgRendered]);
+
+  return <DiagramContainer ref={elementRef} />;
 };
 
 export default MermaidDiagram;

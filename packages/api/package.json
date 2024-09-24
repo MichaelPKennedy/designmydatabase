@@ -58,6 +58,7 @@
     "@feathersjs/typebox": "^5.0.29",
     "dotenv": "^16.4.5",
     "feathers-hooks-common": "^8.2.0",
+    "mermaid": "^11.2.1",
     "mongodb": "^6.8.0",
     "openai": "^4.52.7",
     "winston": "^3.13.1"
@@ -65,6 +66,8 @@
   "devDependencies": {
     "@feathersjs/cli": "^5.0.29",
     "@feathersjs/rest-client": "^5.0.29",
+    "@types/d3": "^7.4.3",
+    "@types/dompurify": "^3.0.5",
     "@types/mocha": "^10.0.7",
     "@types/node": "^20.14.10",
     "axios": "^1.7.2",
@@ -74,6 +77,7 @@
     "prettier": "^3.3.3",
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
+    "type-fest": "^4.26.1",
+    "typescript": "^5.6.2"
   }
 }

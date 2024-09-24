@@ -8,22 +8,16 @@ interface Suggestion {
   activities: string[];
 }
 
-interface Suggestions {
-  people: string[];
-  resources: string[];
-  activities: string[];
-}
-
 const DatabaseForm: React.FC = () => {
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestions | null>(null);
-  const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
-  const [selectedResources, setSelectedResources] = useState<string[]>([]);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
-  const [customPeople, setCustomPeople] = useState<string[]>([]);
-  const [customResources, setCustomResources] = useState<string[]>([]);
-  const [customActivities, setCustomActivities] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Suggestion>({
+    people: [],
+    resources: [],
+    activities: [],
+  });
+  const [customItem, setCustomItem] = useState("");
   const [result, setResult] = useState<{
     sqlCode: string;
     mermaidCode: string;
@@ -41,201 +35,194 @@ const DatabaseForm: React.FC = () => {
       const response = await feathersClient
         .service("openai")
         .find({ query: { businessType } });
-      setSuggestions(response); // Assuming the response is already in the correct format
+      setSuggestions(response);
       setStep(3);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
   };
 
-  const handleSuggestionSelect = (category: keyof Suggestion, item: string) => {
-    switch (category) {
-      case "people":
-        setSelectedPeople((prev) => [...prev, item]);
-        break;
-      case "resources":
-        setSelectedResources((prev) => [...prev, item]);
-        break;
-      case "activities":
-        setSelectedActivities((prev) => [...prev, item]);
-        break;
-    }
+  const handleItemClick = (category: keyof Suggestion, item: string) => {
+    setSelectedItems((prev) => ({
+      ...prev,
+      [category]: prev[category].includes(item)
+        ? prev[category].filter((i) => i !== item)
+        : [...prev[category], item],
+    }));
   };
 
-  const handleCustomAdd = (category: keyof Suggestion, item: string) => {
-    switch (category) {
-      case "people":
-        setCustomPeople((prev) => [...prev, item]);
-        break;
-      case "resources":
-        setCustomResources((prev) => [...prev, item]);
-        break;
-      case "activities":
-        setCustomActivities((prev) => [...prev, item]);
-        break;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCustomItemSubmit = (
+    e: React.FormEvent,
+    category: keyof Suggestion
+  ) => {
     e.preventDefault();
+    if (customItem.trim()) {
+      setSelectedItems((prev) => ({
+        ...prev,
+        [category]: [...prev[category], customItem.trim()],
+      }));
+      setCustomItem("");
+    }
+  };
+
+  const handleNextSection = () => {
+    if (step < 5) {
+      setStep((prev) => prev + 1);
+    } else {
+      handleSubmit();
+    }
+  };
+
+  const handleSubmit = async () => {
     try {
       const response = await feathersClient.service("openai").create({
         name: businessName,
         type: businessType,
-        people: [...selectedPeople, ...customPeople],
-        resources: [...selectedResources, ...customResources],
-        activities: [...selectedActivities, ...customActivities],
+        ...selectedItems,
       });
       setResult(response);
+      setStep(6);
     } catch (error) {
       console.error("Error:", error);
     }
+  };
+
+  const renderSuggestions = (category: keyof Suggestion) => {
+    if (!suggestions) return null;
+    return (
+      <div style={styles.form}>
+        <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {suggestions[category].map((item, index) => (
+            <li
+              key={index}
+              onClick={() => handleItemClick(category, item)}
+              style={{
+                ...styles.suggestionItem,
+                ...(selectedItems[category].includes(item)
+                  ? styles.selected
+                  : {}),
+              }}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+        <form
+          onSubmit={(e) => handleCustomItemSubmit(e, category)}
+          style={{ display: "flex" }}
+        >
+          <input
+            type="text"
+            value={customItem}
+            onChange={(e) => setCustomItem(e.target.value)}
+            placeholder={`Add custom ${category.slice(0, -1)}`}
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>
+            Add Custom
+          </button>
+        </form>
+      </div>
+    );
   };
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <form onSubmit={handleBusinessNameSubmit}>
+          <form onSubmit={handleBusinessNameSubmit} style={styles.form}>
             <input
               type="text"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               placeholder="Enter your business name"
               required
+              style={styles.input}
             />
-            <button type="submit">Next</button>
+            <button type="submit" style={styles.button}>
+              Next
+            </button>
           </form>
         );
       case 2:
         return (
-          <form onSubmit={handleBusinessTypeSubmit}>
+          <form onSubmit={handleBusinessTypeSubmit} style={styles.form}>
             <input
               type="text"
               value={businessType}
               onChange={(e) => setBusinessType(e.target.value)}
               placeholder="Enter your business type"
               required
+              style={styles.input}
             />
-            <button type="submit">Get Suggestions</button>
+            <button type="submit" style={styles.button}>
+              Get Suggestions
+            </button>
           </form>
         );
       case 3:
-        return (
-          <form onSubmit={handleSubmit}>
-            {suggestions && (
-              <>
-                <div>
-                  <h3>People</h3>
-                  {suggestions.people.map((person) => (
-                    <button
-                      key={person}
-                      type="button"
-                      onClick={() => handleSuggestionSelect("people", person)}
-                    >
-                      {person}
-                    </button>
-                  ))}
-                  <input
-                    type="text"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleCustomAdd("people", e.currentTarget.value);
-                        e.currentTarget.value = "";
-                      }
-                    }}
-                    placeholder="Add custom person"
-                  />
-                </div>
-                <div>
-                  <h3>Resources</h3>
-                  {suggestions.resources.map((resource) => (
-                    <button
-                      key={resource}
-                      type="button"
-                      onClick={() =>
-                        handleSuggestionSelect("resources", resource)
-                      }
-                    >
-                      {resource}
-                    </button>
-                  ))}
-                  <input
-                    type="text"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleCustomAdd("resources", e.currentTarget.value);
-                        e.currentTarget.value = "";
-                      }
-                    }}
-                    placeholder="Add custom resource"
-                  />
-                </div>
-                <div>
-                  <h3>Activities</h3>
-                  {suggestions.activities.map((activity) => (
-                    <button
-                      key={activity}
-                      type="button"
-                      onClick={() =>
-                        handleSuggestionSelect("activities", activity)
-                      }
-                    >
-                      {activity}
-                    </button>
-                  ))}
-                  <input
-                    type="text"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleCustomAdd("activities", e.currentTarget.value);
-                        e.currentTarget.value = "";
-                      }
-                    }}
-                    placeholder="Add custom activity"
-                  />
-                </div>
-              </>
-            )}
-            <button type="submit">Generate ERD</button>
-          </form>
+        return renderSuggestions("people");
+      case 4:
+        return renderSuggestions("resources");
+      case 5:
+        return renderSuggestions("activities");
+      case 6:
+        return result ? (
+          <ERDiagram result={result} />
+        ) : (
+          <p>Generating ERD...</p>
         );
       default:
         return null;
     }
   };
 
+  const styles = {
+    suggestionItem: {
+      cursor: "pointer",
+      padding: "5px 10px",
+      margin: "5px 0",
+      borderRadius: "3px",
+      transition: "background-color 0.3s",
+    },
+    selected: {
+      backgroundColor: "#e0e0ff",
+      fontWeight: "bold",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: "10px",
+      maxWidth: "400px",
+      margin: "0 auto",
+    },
+    input: {
+      padding: "5px",
+      fontSize: "16px",
+    },
+    button: {
+      padding: "10px",
+      fontSize: "16px",
+      backgroundColor: "#4CAF50",
+      color: "white",
+      border: "none",
+      borderRadius: "3px",
+      cursor: "pointer",
+    },
+  };
+
   return (
     <div>
       {renderStep()}
-      {step === 3 && suggestions && (
-        <div>
-          <h3>Suggested People:</h3>
-          <ul>
-            {suggestions.people.map((person, index) => (
-              <li key={index}>{person}</li>
-            ))}
-          </ul>
-
-          <h3>Suggested Resources:</h3>
-          <ul>
-            {suggestions.resources.map((resource, index) => (
-              <li key={index}>{resource}</li>
-            ))}
-          </ul>
-
-          <h3>Suggested Activities:</h3>
-          <ul>
-            {suggestions.activities.map((activity, index) => (
-              <li key={index}>{activity}</li>
-            ))}
-          </ul>
-        </div>
+      {step >= 3 && step <= 5 && (
+        <button
+          onClick={handleNextSection}
+          style={{ ...styles.button, marginTop: "20px" }}
+        >
+          {step === 5 ? "Generate ERD" : "Next Section"}
+        </button>
       )}
-      {result && <ERDiagram result={result} />}
     </div>
   );
 };

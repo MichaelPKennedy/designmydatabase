@@ -24,8 +24,8 @@ const DatabaseForm: React.FC = () => {
     mermaidCode: string;
   } | null>(null);
   const [step, setStep] = useState(1);
-  const [feedback, setFeedback] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [businessDetails, setBusinessDetails] = useState("");
 
   const handleBusinessNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,23 +72,25 @@ const DatabaseForm: React.FC = () => {
   };
 
   const handleNextSection = () => {
-    if (step < 5) {
+    if (step < 6) {
       setStep((prev) => prev + 1);
     } else {
       handleSubmit();
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     try {
       const response = await feathersClient.service("openai").create({
         name: businessName,
         type: businessType,
+        details: businessDetails,
         ...selectedItems,
       });
       setResult(response);
-      setStep(6);
+      setStep(7);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -143,7 +145,6 @@ const DatabaseForm: React.FC = () => {
             </button>
           </div>
         </form>
-        {feedback && <p style={styles.feedback}>{feedback}</p>}
       </div>
     );
   };
@@ -263,6 +264,36 @@ const DatabaseForm: React.FC = () => {
           </div>
         );
       case 6:
+        return (
+          <div style={styles.formContainer}>
+            <div style={styles.form}>
+              <StepInstructions
+                question="Any additional details about your business needs? (Optional)"
+                instructions="Provide up to 100 words describing specific requirements or unique aspects of your business. This will help us fine-tune your database schema."
+              />
+              <div style={styles.inputContainer}>
+                <textarea
+                  value={businessDetails}
+                  onChange={(e) => {
+                    const words = e.target.value.trim().split(/\s+/);
+                    if (words.length <= 100) {
+                      setBusinessDetails(e.target.value);
+                    }
+                  }}
+                  style={{
+                    ...styles.input,
+                    minHeight: "100px",
+                    resize: "vertical",
+                  }}
+                />
+                <p style={styles.wordCount}>
+                  {businessDetails.trim().split(/\s+/).length}/100 words
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case 7:
         return result ? (
           <div>
             <ERDiagram result={result} />
@@ -328,12 +359,6 @@ const DatabaseForm: React.FC = () => {
       backgroundColor: "#e0e0ff",
       fontWeight: "bold",
     },
-    feedback: {
-      color: "green",
-      marginTop: "5px",
-      fontSize: "14px",
-      alignSelf: "flex-start",
-    },
     instructionsContainer: {
       textAlign: "left" as const,
       width: "100%",
@@ -361,12 +386,18 @@ const DatabaseForm: React.FC = () => {
       margin: 0,
       marginBottom: "20px",
     },
+    wordCount: {
+      fontSize: "12px",
+      color: "#666",
+      marginTop: "5px",
+      alignSelf: "flex-start",
+    },
   };
 
   return (
     <div>
       {renderStep()}
-      {step >= 3 && step <= 5 && (
+      {step >= 3 && step <= 6 && (
         <div style={styles.buttonContainer}>
           <button
             onClick={handleNextSection}
@@ -375,7 +406,7 @@ const DatabaseForm: React.FC = () => {
           >
             {isLoading
               ? "Generating..."
-              : step === 5
+              : step === 6
               ? "Generate ERD"
               : "Next Section"}
           </button>

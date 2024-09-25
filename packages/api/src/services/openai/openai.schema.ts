@@ -25,10 +25,11 @@ export const openaiExternalResolver = resolve<Openai, HookContext>({})
 export const openaiDataSchema = Type.Object(
   {
     name: Type.String(),
+    type: Type.String(),
     people: Type.Array(Type.String()),
     resources: Type.Array(Type.String()),
     activities: Type.Array(Type.String()),
-    summary: Type.String()
+    details: Type.Optional(Type.String())
   },
   { $id: 'OpenaiData', additionalProperties: false }
 )

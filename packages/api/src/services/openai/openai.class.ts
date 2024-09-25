@@ -113,13 +113,14 @@ export class OpenaiService implements ServiceMethods<any> {
   }
 
   async create(data: OpenaiData, params?: OpenaiParams): Promise<Openai> {
-    const { name, people, resources, activities, summary } = data
-    const prompt = `Generate SQL code to create tables and relationships for a business. Here are some details to help you understand the business(these are not the entities, you should create the entities by inference):
+    const { name, type, people, resources, activities, details } = data
+    const prompt = `Generate SQL code to create tables and relationships for a business. Here are some details to help you understand the business (these are not the entities, you should create the entities by inference):
       Business Name: ${name}
+      Business Type: ${type}
       Main People: ${people.join(', ')}
       Resources, Products, or Services: ${resources.join(', ')}
       Business Activities: ${activities.join(', ')}
-      Business Summary: ${summary}
+      Summmary of Business: ${details || 'No additional details provided'}
 
       Please provide the response in the following format:
       SQL Code:

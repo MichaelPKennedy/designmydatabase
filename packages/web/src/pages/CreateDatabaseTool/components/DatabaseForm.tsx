@@ -68,8 +68,6 @@ const DatabaseForm: React.FC = () => {
         [category]: [...prev[category], customItem.trim()],
       }));
       setCustomItem("");
-      setFeedback(`Added "${customItem.trim()}" to ${category}`);
-      setTimeout(() => setFeedback(""), 3000); // Clear feedback after 3 seconds
     }
   };
 
@@ -101,7 +99,6 @@ const DatabaseForm: React.FC = () => {
   const renderSuggestions = (category: keyof Suggestion) => {
     if (!suggestions) return null;
 
-    // Create a Set of unique items
     const uniqueItems = new Set([
       ...suggestions[category],
       ...selectedItems[category],
@@ -109,7 +106,7 @@ const DatabaseForm: React.FC = () => {
 
     return (
       <div style={{ width: "100%" }}>
-        <ul style={{ listStyle: "none", padding: 0, width: "100%" }}>
+        <ul style={styles.suggestionList}>
           {Array.from(uniqueItems).map((item, index) => (
             <li
               key={index}
@@ -127,22 +124,26 @@ const DatabaseForm: React.FC = () => {
         </ul>
         <form
           onSubmit={(e) => handleCustomItemSubmit(e, category)}
-          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+          style={{ width: "100%" }}
         >
-          <div style={{ display: "flex", width: "100%" }}>
-            <input
-              type="text"
-              value={customItem}
-              onChange={(e) => setCustomItem(e.target.value)}
-              placeholder={`Add custom ${category.slice(0, -1)}`}
-              style={{ ...styles.input, flexGrow: 1, marginRight: "10px" }}
-            />
+          <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <div
+              style={{ ...styles.inputContainer, flex: 1, marginRight: "10px" }}
+            >
+              <input
+                type="text"
+                value={customItem}
+                onChange={(e) => setCustomItem(e.target.value)}
+                placeholder={`Add custom ${category}`}
+                style={styles.input}
+              />
+            </div>
             <button type="submit" style={styles.button}>
               Add Custom
             </button>
           </div>
-          {feedback && <p style={styles.feedback}>{feedback}</p>}
         </form>
+        {feedback && <p style={styles.feedback}>{feedback}</p>}
       </div>
     );
   };
@@ -175,14 +176,16 @@ const DatabaseForm: React.FC = () => {
                 onSubmit={handleBusinessNameSubmit}
                 style={{ width: "100%" }}
               >
-                <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Enter your business name"
-                  required
-                  style={styles.input}
-                />
+                <div style={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Enter your business name"
+                    required
+                    style={styles.input}
+                  />
+                </div>
                 <div style={styles.buttonContainer}>
                   <button type="submit" style={styles.button}>
                     Next
@@ -204,14 +207,16 @@ const DatabaseForm: React.FC = () => {
                 onSubmit={handleBusinessTypeSubmit}
                 style={{ width: "100%" }}
               >
-                <input
-                  type="text"
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  placeholder="Enter your business type"
-                  required
-                  style={styles.input}
-                />
+                <div style={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={businessType}
+                    onChange={(e) => setBusinessType(e.target.value)}
+                    placeholder="Enter your business type"
+                    required
+                    style={styles.input}
+                  />
+                </div>
                 <div style={styles.buttonContainer}>
                   <button type="submit" style={styles.button}>
                     Next
@@ -284,11 +289,21 @@ const DatabaseForm: React.FC = () => {
       width: "100%",
       margin: "0 auto",
       alignItems: "flex-start",
+      boxSizing: "border-box" as "border-box",
+    },
+    inputContainer: {
+      display: "flex",
+      flexDirection: "column" as const,
+      width: "100%",
+      marginBottom: "10px",
     },
     input: {
-      padding: "5px",
+      padding: "10px",
       fontSize: "16px",
       width: "100%",
+      boxSizing: "border-box" as "border-box",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
     },
     button: {
       padding: "10px",
@@ -320,7 +335,6 @@ const DatabaseForm: React.FC = () => {
       alignSelf: "flex-start",
     },
     instructionsContainer: {
-      marginBottom: "20px",
       textAlign: "left" as const,
       width: "100%",
     },
@@ -333,18 +347,19 @@ const DatabaseForm: React.FC = () => {
       fontSize: "14px",
       color: "#666",
     },
-    bottomButtonContainer: {
+    buttonContainer: {
       display: "flex",
       justifyContent: "flex-start",
       width: "100%",
       maxWidth: "400px",
       margin: "20px auto 0",
     },
-    buttonContainer: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginTop: "10px",
+    suggestionList: {
+      listStyle: "none",
+      padding: 0,
       width: "100%",
+      margin: 0,
+      marginBottom: "20px",
     },
   };
 
@@ -352,7 +367,7 @@ const DatabaseForm: React.FC = () => {
     <div>
       {renderStep()}
       {step >= 3 && step <= 5 && (
-        <div style={styles.bottomButtonContainer}>
+        <div style={styles.buttonContainer}>
           <button
             onClick={handleNextSection}
             style={styles.button}

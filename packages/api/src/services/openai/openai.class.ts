@@ -32,11 +32,29 @@ export class OpenaiService implements ServiceMethods<any> {
       return false
     }
 
-    // Check for basic entity syntax
+    // Check for basic entity syntax and attribute format
     const entityRegex = /\w+\s*{[^}]*}/g
     const entities = mermaidCode.match(entityRegex)
     if (!entities || entities.length === 0) {
       return false
+    }
+
+    // Check each entity's attributes
+    for (const entity of entities) {
+      const attributesMatch = entity.match(/{([^}]*)}/)
+      if (attributesMatch) {
+        const attributes = attributesMatch[1].trim().split('\n')
+        for (const attr of attributes) {
+          // Check if attribute contains a comma
+          if (attr.includes(',')) {
+            return false
+          }
+          // Check if attribute follows the format: name type
+          if (!/^\s*\w+\s+\w+(\([^)]*\))?\s*$/.test(attr.trim())) {
+            return false
+          }
+        }
+      }
     }
 
     // Check for relationship syntax

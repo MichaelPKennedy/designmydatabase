@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ERDiagram from "./ERDiagram";
+import LoadingSpinner from "./LoadingSpinner";
 import feathersClient from "../../../feathersClient";
 
 interface Suggestion {
@@ -24,6 +25,7 @@ const DatabaseForm: React.FC = () => {
   } | null>(null);
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBusinessNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,7 @@ const DatabaseForm: React.FC = () => {
 
   const handleBusinessTypeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await feathersClient
         .service("openai")
@@ -40,6 +43,8 @@ const DatabaseForm: React.FC = () => {
       setStep(3);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,6 +82,7 @@ const DatabaseForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     try {
       const response = await feathersClient.service("openai").create({
         name: businessName,
@@ -87,6 +93,8 @@ const DatabaseForm: React.FC = () => {
       setStep(6);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -101,7 +109,6 @@ const DatabaseForm: React.FC = () => {
 
     return (
       <div style={styles.form}>
-        <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
         <ul style={{ listStyle: "none", padding: 0 }}>
           {Array.from(uniqueItems).map((item, index) => (
             <li
@@ -140,46 +147,96 @@ const DatabaseForm: React.FC = () => {
     );
   };
 
+  const StepInstructions: React.FC<{
+    question: string;
+    instructions: string;
+  }> = ({ question, instructions }) => (
+    <div style={styles.instructionsContainer}>
+      <h3 style={styles.question}>{question}</h3>
+      <p style={styles.instructions}>{instructions}</p>
+    </div>
+  );
+
   const renderStep = () => {
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+
     switch (step) {
       case 1:
         return (
-          <form onSubmit={handleBusinessNameSubmit} style={styles.form}>
-            <input
-              type="text"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="Enter your business name"
-              required
-              style={styles.input}
+          <>
+            <StepInstructions
+              question="What's the name of your business?"
+              instructions="Enter the name of your business or project. This will help us personalize the database schema for you."
             />
-            <button type="submit" style={styles.button}>
-              Next
-            </button>
-          </form>
+            <form onSubmit={handleBusinessNameSubmit} style={styles.form}>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="Enter your business name"
+                required
+                style={styles.input}
+              />
+              <button type="submit" style={styles.button}>
+                Next
+              </button>
+            </form>
+          </>
         );
       case 2:
         return (
-          <form onSubmit={handleBusinessTypeSubmit} style={styles.form}>
-            <input
-              type="text"
-              value={businessType}
-              onChange={(e) => setBusinessType(e.target.value)}
-              placeholder="Enter your business type"
-              required
-              style={styles.input}
+          <>
+            <StepInstructions
+              question="What type of business are you running?"
+              instructions="Describe your business type or industry. This helps us suggest relevant database entities and relationships."
             />
-            <button type="submit" style={styles.button}>
-              Get Suggestions
-            </button>
-          </form>
+            <form onSubmit={handleBusinessTypeSubmit} style={styles.form}>
+              <input
+                type="text"
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                placeholder="Enter your business type"
+                required
+                style={styles.input}
+              />
+              <button type="submit" style={styles.button}>
+                Next
+              </button>
+            </form>
+          </>
         );
       case 3:
-        return renderSuggestions("people");
+        return (
+          <>
+            <StepInstructions
+              question="Who are the key people or roles in your business?"
+              instructions="Select from the suggested roles or add custom ones."
+            />
+            {renderSuggestions("people")}
+          </>
+        );
       case 4:
-        return renderSuggestions("resources");
+        return (
+          <>
+            <StepInstructions
+              question="What are the main resources or assets in your business?"
+              instructions="Choose from the suggested resources or add your own."
+            />
+            {renderSuggestions("resources")}
+          </>
+        );
       case 5:
-        return renderSuggestions("activities");
+        return (
+          <>
+            <StepInstructions
+              question="What are the key activities or processes in your business?"
+              instructions="Select or add activities that are central to your business."
+            />
+            {renderSuggestions("activities")}
+          </>
+        );
       case 6:
         return result ? (
           <div>
@@ -230,6 +287,19 @@ const DatabaseForm: React.FC = () => {
       marginTop: "5px",
       fontSize: "14px",
     },
+    instructionsContainer: {
+      marginBottom: "20px",
+      textAlign: "left" as const,
+    },
+    question: {
+      fontSize: "18px",
+      fontWeight: "bold",
+      marginBottom: "10px",
+    },
+    instructions: {
+      fontSize: "14px",
+      color: "#666",
+    },
   };
 
   return (
@@ -239,8 +309,13 @@ const DatabaseForm: React.FC = () => {
         <button
           onClick={handleNextSection}
           style={{ ...styles.button, marginTop: "20px" }}
+          disabled={isLoading}
         >
-          {step === 5 ? "Generate ERD" : "Next Section"}
+          {isLoading
+            ? "Generating..."
+            : step === 5
+            ? "Generate ERD"
+            : "Next Section"}
         </button>
       )}
     </div>

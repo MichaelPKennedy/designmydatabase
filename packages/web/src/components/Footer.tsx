@@ -11,7 +11,7 @@ const FooterContainer = styled.footer`
 const Footer: React.FC = () => {
   return (
     <FooterContainer>
-      <p>&copy; 2023 Database Designer. All rights reserved.</p>
+      <p>&copy; 2024 DesignMyDatabase. All rights reserved.</p>
     </FooterContainer>
   );
 };

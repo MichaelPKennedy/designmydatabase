@@ -31,7 +31,7 @@ const NavLink = styled.a`
 const Header: React.FC = () => {
   return (
     <HeaderContainer>
-      <Logo>Database Designer</Logo>
+      <Logo>DesignMyDatabase</Logo>
       <Nav>
         <NavLink href="#">Home</NavLink>
         <NavLink href="#">About</NavLink>

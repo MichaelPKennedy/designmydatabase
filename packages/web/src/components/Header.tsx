@@ -4,16 +4,22 @@ import { Link } from "react-router-dom";
 
 const HeaderContainer = styled.header`
   background-color: #1a1a1a;
-  padding: 1rem;
+  padding: 0.75rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
+const LogoLink = styled(Link)`
+  text-decoration: none;
+`;
+
 const Logo = styled.h1`
   color: #fff;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 `;
 
 const Nav = styled.nav`
@@ -21,21 +27,27 @@ const Nav = styled.nav`
   gap: 1rem;
 `;
 
-const NavLink = styled.a`
+const NavLink = styled(Link)`
   color: #fff;
   text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
   &:hover {
-    text-decoration: underline;
+    background-color: rgba(255, 255, 255, 0.1);
   }
 `;
 
 const Header: React.FC = () => {
   return (
     <HeaderContainer>
-      <Logo>DesignMyDatabase</Logo>
+      <LogoLink to="/">
+        <Logo>DesignMyDatabase</Logo>
+      </LogoLink>
       <Nav>
-        <NavLink href="/">Home</NavLink>
-        <Link to="/contact">Contact</Link>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/contact">Contact</NavLink>
       </Nav>
     </HeaderContainer>
   );

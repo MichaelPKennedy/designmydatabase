@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import MermaidDiagram from "./MermaidDiagram";
 import mermaid from "mermaid";
+import styled from "styled-components";
 
 interface ERDiagramProps {
   result: {
@@ -8,6 +9,21 @@ interface ERDiagramProps {
     sqlCode: string;
   };
 }
+
+const DiagramContainer = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+`;
+
+const DownloadButton = styled.button``;
 
 const ERDiagram: React.FC<ERDiagramProps> = ({ result }) => {
   const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
@@ -73,23 +89,21 @@ const ERDiagram: React.FC<ERDiagramProps> = ({ result }) => {
           <pre>{error}</pre>
         </div>
       ) : (
-        <MermaidDiagram
-          chartDefinition={result.mermaidCode}
-          onSvgRendered={handleSvgRendered}
-        />
+        <DiagramContainer>
+          <MermaidDiagram
+            chartDefinition={result.mermaidCode}
+            onSvgRendered={handleSvgRendered}
+          />
+        </DiagramContainer>
       )}
-      <div className="button-container">
-        <button className="download-button" onClick={handleDownloadSQL}>
+      <ButtonContainer>
+        <DownloadButton onClick={handleDownloadSQL}>
           Download SQL
-        </button>
-        <button
-          className="download-button"
-          onClick={handleDownloadERD}
-          disabled={!svgElement}
-        >
+        </DownloadButton>
+        <DownloadButton onClick={handleDownloadERD} disabled={!svgElement}>
           Download ERD
-        </button>
-      </div>
+        </DownloadButton>
+      </ButtonContainer>
     </div>
   );
 };

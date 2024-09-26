@@ -34,7 +34,6 @@ const Header: React.FC = () => {
       <Logo>DesignMyDatabase</Logo>
       <Nav>
         <NavLink href="#">Home</NavLink>
-        <NavLink href="#">About</NavLink>
         <NavLink href="#">Contact</NavLink>
       </Nav>
     </HeaderContainer>

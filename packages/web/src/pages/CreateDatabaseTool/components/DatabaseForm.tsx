@@ -2,12 +2,25 @@ import React, { useState } from "react";
 import ERDiagram from "./ERDiagram";
 import LoadingSpinner from "./LoadingSpinner";
 import feathersClient from "../../../feathersClient";
+import styled from "styled-components";
 
 interface Suggestion {
   people: string[];
   resources: string[];
   activities: string[];
 }
+
+const CenteredButton = styled.button`
+  padding: 10px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+`;
 
 const DatabaseForm: React.FC = () => {
   const [businessName, setBusinessName] = useState("");
@@ -399,17 +412,17 @@ const DatabaseForm: React.FC = () => {
       {renderStep()}
       {step >= 3 && step <= 6 && (
         <div style={styles.buttonContainer}>
-          <button
-            onClick={handleNextSection}
-            style={styles.button}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Generating..."
-              : step === 6
-              ? "Generate ERD"
-              : "Next Section"}
-          </button>
+          {isLoading ? (
+            <CenteredButton disabled>Generating...</CenteredButton>
+          ) : (
+            <button
+              onClick={handleNextSection}
+              style={styles.button}
+              disabled={isLoading}
+            >
+              {step === 6 ? "Generate ERD" : "Next Section"}
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -10,10 +10,10 @@ interface MermaidDiagramProps {
 
 const DiagramContainer = styled.div`
   width: 100%;
-  overflow-x: auto;
   background-color: #f5f5f5;
   padding: 20px;
   border-radius: 8px;
+  box-sizing: border-box;
 `;
 
 const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
@@ -30,6 +30,12 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
           if (elementRef.current) {
             elementRef.current.innerHTML = result.svg;
             const svgElement = elementRef.current.querySelector("svg");
+            if (svgElement) {
+              // Make the SVG responsive
+              svgElement.setAttribute("width", "100%");
+              svgElement.setAttribute("height", "auto");
+              svgElement.style.maxWidth = "100%";
+            }
             onSvgRendered(svgElement as SVGSVGElement, null);
           }
         })

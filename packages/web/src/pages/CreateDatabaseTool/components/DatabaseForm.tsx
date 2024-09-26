@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ERDiagram from "./ERDiagram";
 import LoadingSpinner from "./LoadingSpinner";
 import feathersClient from "../../../feathersClient";
+import ContactForm from "./ContactForm";
 import styled from "styled-components";
 
 interface Suggestion {

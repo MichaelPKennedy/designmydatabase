@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 const HeaderContainer = styled.header`
   background-color: #1a1a1a;
@@ -33,8 +34,8 @@ const Header: React.FC = () => {
     <HeaderContainer>
       <Logo>DesignMyDatabase</Logo>
       <Nav>
-        <NavLink href="#">Home</NavLink>
-        <NavLink href="#">Contact</NavLink>
+        <NavLink href="/">Home</NavLink>
+        <Link to="/contact">Contact</Link>
       </Nav>
     </HeaderContainer>
   );

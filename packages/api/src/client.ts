@@ -4,6 +4,9 @@ import type { TransportConnection, Application } from '@feathersjs/feathers'
 import authenticationClient from '@feathersjs/authentication-client'
 import type { AuthenticationClientOptions } from '@feathersjs/authentication-client'
 
+import { emailClient } from './services/email/email.shared'
+export type { Email, EmailData, EmailQuery, EmailPatch } from './services/email/email.shared'
+
 import { openaiClient } from './services/openai/openai.shared'
 export type { Openai, OpenaiData, OpenaiQuery, OpenaiPatch } from './services/openai/openai.shared'
 
@@ -23,7 +26,7 @@ export type ClientApplication = Application<ServiceTypes, Configuration>
  * @see https://dove.feathersjs.com/api/client.html
  * @returns The Feathers client application
  */
-export const createClient = <Configuration = any>(
+export const createClient = <Configuration = any,>(
   connection: TransportConnection<ServiceTypes>,
   authenticationOptions: Partial<AuthenticationClientOptions> = {}
 ) => {
@@ -34,5 +37,6 @@ export const createClient = <Configuration = any>(
   client.set('connection', connection)
 
   client.configure(openaiClient)
+  client.configure(emailClient)
   return client
 }

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import ERDiagram from "./ERDiagram";
 import LoadingSpinner from "./LoadingSpinner";
 import feathersClient from "../../../feathersClient";
-import ContactForm from "./ContactForm";
 import styled from "styled-components";
 
 interface Suggestion {
@@ -334,7 +333,7 @@ const DatabaseForm: React.FC = () => {
       width: "100%",
       margin: "0 auto",
       alignItems: "flex-start",
-      boxSizing: "border-box" as "border-box",
+      boxSizing: "border-box" as const,
     },
     inputContainer: {
       display: "flex",
@@ -346,7 +345,7 @@ const DatabaseForm: React.FC = () => {
       padding: "10px",
       fontSize: "16px",
       width: "100%",
-      boxSizing: "border-box" as "border-box",
+      boxSizing: "border-box" as const,
       border: "1px solid #ccc",
       borderRadius: "4px",
     },

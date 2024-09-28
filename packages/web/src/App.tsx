@@ -10,8 +10,6 @@ const AppContainer = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  max-width: 100%;
-  overflow-x: hidden;
 `;
 
 const MainContent = styled.main`
@@ -19,8 +17,6 @@ const MainContent = styled.main`
   padding: 2rem;
   width: 100%;
   box-sizing: border-box;
-  max-width: 1280px;
-  margin: 0 auto;
 `;
 
 function App() {

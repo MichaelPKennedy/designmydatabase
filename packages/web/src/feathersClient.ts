@@ -14,8 +14,8 @@ export const axiosInstance = axios.create({
   baseURL: API_ENDPOINT,
 });
 
-const API_KEY = process.env.REACT_APP_API_KEY;
-axiosInstance.defaults.headers.common["x-access-token"] = API_KEY;
+// const API_KEY = process.env.REACT_APP_API_KEY;
+// axiosInstance.defaults.headers.common["x-access-token"] = API_KEY;
 
 const restClient = rest(API_ENDPOINT);
 

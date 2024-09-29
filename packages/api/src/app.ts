@@ -18,12 +18,12 @@ app.configure(configuration(configurationValidator))
 
 // Set up Koa middleware
 app.use(cors())
-app.configure(services)
-app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())
 app.use(bodyParser())
 
+app.configure(services)
+app.use(serveStatic(app.get('public')))
 // Configure services and transports
 app.configure(rest())
 app.configure(

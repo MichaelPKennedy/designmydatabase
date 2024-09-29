@@ -26,15 +26,14 @@ app.use(parseAuthentication())
 app.use(bodyParser())
 
 // Configure services and transports
-app.configure(rest())
-  .configure(
-    socketio((io) => {
-      const mongoClient = app.get('mongodbClient');
-      io.engine.on("headers", (headers: any) => {
-        headers["Access-Control-Allow-Origin"] = "*"; /
-      });
+app.configure(rest()).configure(
+  socketio((io) => {
+    const mongoClient = app.get('mongodbClient')
+    io.engine.on('headers', (headers: any) => {
+      headers['Access-Control-Allow-Origin'] = '*'
     })
-  )
+  })
+)
 app.configure(mongodb)
 app.configure(services)
 app.configure(channels)

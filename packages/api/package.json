@@ -36,7 +36,7 @@
   "main": "lib/client",
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
-    "compile": "tsc",
+    "compile": "shx rm -rf lib && tsc",
     "postinstall": "npm cache clean --force",
     "start": "npm run compile && node lib/",
     "prettier": "npx prettier \"**/*.ts\" --write",

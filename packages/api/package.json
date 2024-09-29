@@ -37,8 +37,7 @@
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
     "compile": "shx rm -rf lib && tsc",
-    "postinstall": "npm cache clean --force",
-    "start": "npm run compile && node --optimize-for-size --max-old-space-size=4096 lib/",
+    "start": "npm run compile && node lib/",
     "prettier": "npx prettier \"**/*.ts\" --write",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "npm run mocha",

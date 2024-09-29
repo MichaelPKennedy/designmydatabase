@@ -16,7 +16,13 @@ const app: Application = koa(feathers())
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
 
-// Set up Koa middleware
+const corsOptions = {
+  origin: 'https://designmydatabase.com',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}
+
+app.use(cors(corsOptions))
 app.use(cors())
 app.use(serveStatic(app.get('public')))
 app.use(errorHandler())

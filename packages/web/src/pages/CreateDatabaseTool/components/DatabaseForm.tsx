@@ -50,7 +50,7 @@ const DatabaseForm: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await feathersClient
-        .service("openai")
+        .service("/openai")
         .find({ query: { businessType } });
       setSuggestions(response);
       setStep(3);
@@ -96,7 +96,7 @@ const DatabaseForm: React.FC = () => {
     if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await feathersClient.service("openai").create({
+      const response = await feathersClient.service("/openai").create({
         name: businessName,
         type: businessType,
         details: businessDetails,

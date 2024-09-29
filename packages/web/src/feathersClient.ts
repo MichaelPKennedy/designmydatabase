@@ -1,6 +1,7 @@
 import feathers from "@feathersjs/feathers";
 import rest from "@feathersjs/rest-client";
 import axios from "axios";
+import process from "process";
 
 const isMobileTesting = process.env.REACT_APP_MOBILE_TESTING;
 const DEFAULT_API_ENDPOINT = isMobileTesting
@@ -8,8 +9,6 @@ const DEFAULT_API_ENDPOINT = isMobileTesting
   : "http://localhost:3030";
 
 const API_ENDPOINT = import.meta.env.VITE_API_URL || DEFAULT_API_ENDPOINT;
-console.log("API URL:", process.env.REACT_APP_API_URL);
-console.log("API ENDPOINT:", API_ENDPOINT);
 
 export const axiosInstance = axios.create({
   baseURL: API_ENDPOINT,

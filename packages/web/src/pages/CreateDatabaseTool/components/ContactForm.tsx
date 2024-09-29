@@ -50,7 +50,7 @@ const ContactForm: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await feathersClient.service("email").create({ name, email, message });
+      await feathersClient.service("/email").create({ name, email, message });
       setSubmitMessage("Your message has been sent successfully!");
       setName("");
       setEmail("");

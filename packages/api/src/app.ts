@@ -15,13 +15,9 @@ const app: Application = koa(feathers())
 
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
-  credentials: true
-}
-app.use(cors(corsOptions))
+
+// Set up Koa middleware
+app.use(cors())
 app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())
@@ -32,7 +28,7 @@ app.configure(rest())
 app.configure(
   socketio({
     cors: {
-      origin: ['https://designmydatabase.com', 'http://localhost:3030']
+      origin: app.get('origins')
     }
   })
 )

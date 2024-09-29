@@ -2,8 +2,6 @@ import feathers from "@feathersjs/feathers";
 import rest from "@feathersjs/rest-client";
 import axios from "axios";
 
-import process from "process";
-
 const isMobileTesting = process.env.REACT_APP_MOBILE_TESTING;
 const DEFAULT_API_ENDPOINT = isMobileTesting
   ? "http://10.0.0.2:3030"

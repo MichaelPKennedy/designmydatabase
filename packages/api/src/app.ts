@@ -15,10 +15,10 @@ const app: Application = koa(feathers())
 
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
-app.configure(services)
 
 // Set up Koa middleware
 app.use(cors())
+app.configure(services)
 app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())

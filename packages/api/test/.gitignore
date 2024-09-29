@@ -121,7 +121,7 @@ dist
 lib/
 
 **/.DS_Store
-config/default.json
+**/*.json
 !/config/default-example.json
 !/config/custom-environment-variables.json
 !/config/production.json

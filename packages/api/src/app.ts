@@ -15,8 +15,7 @@ const app: Application = koa(feathers())
 
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
-app.use(cors({ origin: 'https://designmydatabase.com', credentials: true }))
-app.use(cors())
+app.use(cors({ origin: 'https://designmydatabase.com' }))
 app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())
@@ -27,7 +26,7 @@ app.configure(rest())
 app.configure(
   socketio({
     cors: {
-      origin: app.get('origins')
+      origin: ['https://designmydatabase.com', 'http://localhost:3030']
     }
   })
 )

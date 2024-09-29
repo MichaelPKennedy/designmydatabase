@@ -10,6 +10,8 @@ const DEFAULT_API_ENDPOINT = isMobileTesting
   : "http://localhost:3030";
 
 const API_ENDPOINT = process.env.REACT_APP_API_URL || DEFAULT_API_ENDPOINT;
+console.log("API URL:", process.env.REACT_APP_API_URL);
+console.log("API ENDPOINT:", API_ENDPOINT);
 
 export const axiosInstance = axios.create({
   baseURL: API_ENDPOINT,

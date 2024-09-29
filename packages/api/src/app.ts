@@ -18,19 +18,11 @@ app.configure(configuration(configurationValidator))
 
 // Set up Koa middleware
 app.use(cors())
+app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())
 app.use(bodyParser())
 
-app.configure(() => {
-  const servicePaths = Object.keys(app.services)
-  console.log('Registered services and their methods:')
-  servicePaths.forEach((path) => {
-    const service = app.service(path as any)
-    console.log(`- Path: ${path}, Methods: ${Object.keys(service)}`)
-  })
-})
-app.use(serveStatic(app.get('public')))
 // Configure services and transports
 app.configure(rest())
 app.configure(
@@ -41,6 +33,7 @@ app.configure(
   })
 )
 app.configure(mongodb)
+app.configure(services)
 app.configure(channels)
 
 // Register hooks that run on all service methods

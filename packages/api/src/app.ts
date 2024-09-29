@@ -7,7 +7,6 @@ import socketio from '@feathersjs/socketio'
 import { configurationValidator } from './configuration'
 import type { Application } from './declarations'
 import { logError } from './hooks/log-error'
-import { mongodb } from './mongodb'
 import { services } from './services/index'
 import { channels } from './channels'
 
@@ -15,26 +14,23 @@ const app: Application = koa(feathers())
 
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
-import path from 'path'
 
 // Set up Koa middleware
 app.use(cors())
-const publicDir = path.join(__dirname, '../public')
-app.use(serveStatic(publicDir))
+
 app.use(errorHandler())
 app.use(parseAuthentication())
 app.use(bodyParser())
 
 // Configure services and transports
-app.configure(rest()).configure(
-  socketio((io) => {
-    const mongoClient = app.get('mongodbClient')
-    io.engine.on('headers', (headers: any) => {
-      headers['Access-Control-Allow-Origin'] = '*'
-    })
+app.configure(rest())
+app.configure(
+  socketio({
+    cors: {
+      origin: app.get('origins')
+    }
   })
 )
-app.configure(mongodb)
 app.configure(services)
 app.configure(channels)
 

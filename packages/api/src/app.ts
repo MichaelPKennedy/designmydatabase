@@ -15,6 +15,7 @@ const app: Application = koa(feathers())
 
 // Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
+app.configure(services)
 
 // Set up Koa middleware
 app.use(cors())
@@ -33,7 +34,6 @@ app.configure(
   })
 )
 app.configure(mongodb)
-app.configure(services)
 app.configure(channels)
 
 // Register hooks that run on all service methods

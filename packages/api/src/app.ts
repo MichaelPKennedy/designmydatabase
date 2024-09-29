@@ -17,7 +17,6 @@ app.configure(configuration(configurationValidator))
 
 // Set up Koa middleware
 app.use(cors())
-
 app.use(errorHandler())
 app.use(parseAuthentication())
 app.use(bodyParser())

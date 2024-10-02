@@ -1,30 +1,71 @@
-# React + TypeScript + Vite
+# DesignMyDatabase
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+DesignMyDatabase is a web application that helps users create database schemas using AI-powered suggestions. It provides an intuitive interface for designing database structures and generates both SQL code and Entity-Relationship Diagrams (ERDs).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- AI-powered database schema generation
+- Interactive form for inputting business details
+- Real-time Entity-Relationship Diagram (ERD) visualization
+- SQL code generation for database creation
+- Contact form for user inquiries
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Frontend: React with TypeScript
+- Backend: Feathers.js (Node.js)
+- Database: MongoDB
+- AI Integration: OpenAI API
+- Styling: Styled-components
+- Diagram Generation: Mermaid.js
 
-- Configure the top-level `parserOptions` property like this:
+## Project Structure
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+The project is organized into two main packages:
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+1. `packages/web`: React frontend application
+2. `packages/api`: Feathers.js backend application
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18.18.0 or later)
+- npm (comes with Node.js)
+- MongoDB
+
+### Installation
+
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/yourusername/designmydatabase.git
+   cd designmydatabase
+   ```
+
+2. Install dependencies:
+
+   ```
+   npm install
+   ```
+
+3. Set up environment variables:
+   - Create a `.env` file in the root directory
+   - Add necessary environment variables (e.g., MongoDB connection string, OpenAI API key)
+
+### Running the Application
+
+1. Start the fronted/backend servers:
+
+   ```
+   npm run dev
+   ```
+
+2. Open your browser and navigate to `http://localhost:5173` (or the port specified by Vite)
+
+## API Documentation
+
+The backend provides the following main services:
+
+1. OpenAI Service: Generates database schemas and ERDs
+2. Email Service: Handles contact form submissions

@@ -1,6 +1,7 @@
 {
   "ts-node": {
-    "files": true
+    "files": true,
+    "transpileOnly": true
   },
   "compilerOptions": {
     "target": "es2020",
@@ -10,12 +11,14 @@
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "test"
+    "test",
+    "node_modules"
   ]
 }

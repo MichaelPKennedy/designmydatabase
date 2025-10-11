@@ -3,18 +3,18 @@ import type { Application } from '../../declarations'
 import type { Email, EmailData, EmailPatch, EmailQuery } from './email.schema'
 
 export type { Email, EmailData, EmailPatch, EmailQuery }
-import sgMail from '@sendgrid/mail'
+import { Resend } from 'resend'
 
 import dotenv from 'dotenv'
 dotenv.config()
-const apiKey = process.env.SENDGRID_API_KEY
+const apiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.FROM_EMAIL || ''
 const toEmail = process.env.TO_EMAIL || ''
 if (!apiKey) {
-  throw new Error('SENDGRID_API_KEY is not defined')
+  throw new Error('RESEND_API_KEY is not defined')
 }
 
-sgMail.setApiKey(apiKey)
+const resend = new Resend(apiKey)
 
 export interface EmailParams extends Params {
   query?: {}
@@ -47,17 +47,20 @@ export class EmailService implements ServiceMethods<any> {
       <p>Message: ${message}</p>
     `
 
-    const msg = {
-      to: toEmail,
-      from: { email: fromEmail, name: 'DesignMyDatabase' },
-      subject: 'New Contact Form Submission',
-      text: 'New Contact Form Submission',
-      html: htmlContent
-    }
-
     try {
-      await sgMail.send(msg)
-      return { email: msg.to, name: '', message: 'Email sent successfully' }
+      const { data: result, error } = await resend.emails.send({
+        from: `DesignMyDatabase <${fromEmail}>`,
+        to: toEmail,
+        subject: 'New Contact Form Submission',
+        html: htmlContent
+      })
+
+      if (error) {
+        console.error('Error sending email:', error)
+        throw new Error('Failed to send email')
+      }
+
+      return { email: toEmail, name: '', message: 'Email sent successfully' }
     } catch (error) {
       console.error('Error sending email:', error)
       throw new Error('Failed to send email')
